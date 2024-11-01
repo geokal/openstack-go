@@ -1,36 +1,42 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"os"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 )
 
 func main() {
+	ctx := context.Background()
 
-	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: "https://auth.cloud.ovh.net",
-		Username:         "",
-		Password:         "",
-		DomainName:       "ovhcloud-emea",
-		DomainID:         "default",
-	}
-
-	provider, err := openstack.AuthenticatedClient(opts)
+	opts, err := openstack.AuthOptionsFromEnv()
 	if err != nil {
 		panic(err)
 	}
-	computeClient, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{
-		Region: "UK1",
+
+	providerClient, err := openstack.AuthenticatedClient(ctx, opts)
+	if err != nil {
+		panic(err)
+	}
+
+	computeClient, err := openstack.NewComputeV2(providerClient, gophercloud.EndpointOpts{
+		Region: os.Getenv("OS_REGION_NAME"),
 	})
 	if err != nil {
 		panic(err)
 	}
 
 	// use the computeClient
-	pager, err := servers.List(computeClient, nil).AllPages()
+	listOpts := servers.ListOpts{
+		AllTenants: true,
+	}
+
+	// use the computeClient
+	pager, err := servers.List(computeClient, listOpts).AllPages(context.TODO())
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -46,4 +52,5 @@ func main() {
 	for i, server := range servers {
 		fmt.Printf("  server %d: id=%s\n", i, server.ID)
 	}
+
 }
