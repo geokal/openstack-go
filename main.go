@@ -32,7 +32,7 @@ func main() {
 
 	// use the computeClient
 	listOpts := servers.ListOpts{
-		AllTenants: true,
+		AllTenants: false,
 	}
 
 	// use the computeClient
