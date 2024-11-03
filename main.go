@@ -13,6 +13,7 @@ import (
 func main() {
 	ctx := context.Background()
 
+	// load enviromental variables for openstack , they start with "OS_"
 	opts, err := openstack.AuthOptionsFromEnv()
 	if err != nil {
 		panic(err)
