@@ -6,9 +6,15 @@ import (
 	"log"
 
 	"example.com/go-openstack/v2/internal/openstack"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: Could not load .env file: %v", err)
+	}
+
 	ctx := context.Background()
 
 	client, err := openstack.NewClient(ctx)
