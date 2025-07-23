@@ -2,7 +2,9 @@ package openstack
 
 import (
 	"context"
+	"errors"
 
+	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 )
@@ -60,21 +62,33 @@ func (c *Client) GetFlavor(ctx context.Context, flavorID string) (*flavors.Flavo
 	return flavors.Get(ctx, c.Compute, flavorID).Extract()
 }
 
+
 // StartServer issues a start action for a shutoff server.
-// The server should transition from the SHUTOFF state to ACTIVE.
 func (c *Client) StartServer(ctx context.Context, serverID string) error {
 	return servers.Start(ctx, c.Compute, serverID).ExtractErr()
 }
 
 // StopServer issues a stop action for a running server.
-// The server should transition from ACTIVE to SHUTOFF once the operation completes.
 func (c *Client) StopServer(ctx context.Context, serverID string) error {
 	return servers.Stop(ctx, c.Compute, serverID).ExtractErr()
 }
 
 // RebootServer reboots the specified server using a soft reboot.
-// If the soft reboot fails the server may remain in the ACTIVE state.
 func (c *Client) RebootServer(ctx context.Context, serverID string) error {
 	opts := servers.RebootOpts{Type: servers.SoftReboot}
 	return servers.Reboot(ctx, c.Compute, serverID, opts).ExtractErr()
+}
+
+// DeleteServer removes a server by ID and waits until it is fully deleted.
+func (c *Client) DeleteServer(ctx context.Context, serverID string) error {
+	if err := servers.Delete(ctx, c.Compute, serverID).ExtractErr(); err != nil {
+		return err
+	}
+
+	err := servers.WaitForStatus(ctx, c.Compute, serverID, "DELETED", 120)
+	if err != nil && !errors.Is(err, gophercloud.ErrDefault404{}) {
+		return err
+	}
+
+	return nil
 }

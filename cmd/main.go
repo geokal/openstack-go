@@ -76,4 +76,11 @@ func main() {
 	}
 
 	fmt.Printf("Created new server: id=%s, name=%s\n", newServer.ID, newServer.Name)
+
+	// Delete the newly created server
+	fmt.Printf("Deleting server %s...\n", newServer.ID)
+	if err := client.DeleteServer(ctx, newServer.ID); err != nil {
+		log.Fatalf("Failed to delete server: %v", err)
+	}
+	fmt.Println("Server deleted")
 }
