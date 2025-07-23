@@ -59,3 +59,22 @@ func (c *Client) CreateServer(ctx context.Context, config ServerConfig) (*server
 func (c *Client) GetFlavor(ctx context.Context, flavorID string) (*flavors.Flavor, error) {
 	return flavors.Get(ctx, c.Compute, flavorID).Extract()
 }
+
+// StartServer issues a start action for a shutoff server.
+// The server should transition from the SHUTOFF state to ACTIVE.
+func (c *Client) StartServer(ctx context.Context, serverID string) error {
+	return servers.Start(ctx, c.Compute, serverID).ExtractErr()
+}
+
+// StopServer issues a stop action for a running server.
+// The server should transition from ACTIVE to SHUTOFF once the operation completes.
+func (c *Client) StopServer(ctx context.Context, serverID string) error {
+	return servers.Stop(ctx, c.Compute, serverID).ExtractErr()
+}
+
+// RebootServer reboots the specified server using a soft reboot.
+// If the soft reboot fails the server may remain in the ACTIVE state.
+func (c *Client) RebootServer(ctx context.Context, serverID string) error {
+	opts := servers.RebootOpts{Type: servers.SoftReboot}
+	return servers.Reboot(ctx, c.Compute, serverID, opts).ExtractErr()
+}

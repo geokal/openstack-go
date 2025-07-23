@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 
@@ -15,11 +16,38 @@ func main() {
 		log.Printf("Warning: Could not load .env file: %v", err)
 	}
 
+	// Command line flags for basic server actions
+	startID := flag.String("start", "", "ID of server to start")
+	stopID := flag.String("stop", "", "ID of server to stop")
+	rebootID := flag.String("reboot", "", "ID of server to reboot")
+	flag.Parse()
+
 	ctx := context.Background()
 
 	client, err := openstack.NewClient(ctx)
 	if err != nil {
 		log.Fatalf("Failed to create OpenStack client: %v", err)
+	}
+
+	if *startID != "" {
+		if err := client.StartServer(ctx, *startID); err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+		fmt.Printf("Started server %s\n", *startID)
+	}
+
+	if *stopID != "" {
+		if err := client.StopServer(ctx, *stopID); err != nil {
+			log.Fatalf("Failed to stop server: %v", err)
+		}
+		fmt.Printf("Stopped server %s\n", *stopID)
+	}
+
+	if *rebootID != "" {
+		if err := client.RebootServer(ctx, *rebootID); err != nil {
+			log.Fatalf("Failed to reboot server: %v", err)
+		}
+		fmt.Printf("Rebooted server %s\n", *rebootID)
 	}
 
 	// List servers example
