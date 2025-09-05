@@ -62,6 +62,10 @@ func (c *Client) GetFlavor(ctx context.Context, flavorID string) (*flavors.Flavo
 	return flavors.Get(ctx, c.Compute, flavorID).Extract()
 }
 
+// GetServer retrieves server details by ID
+func (c *Client) GetServer(ctx context.Context, serverID string) (*servers.Server, error) {
+	return servers.Get(ctx, c.Compute, serverID).Extract()
+}
 
 // StartServer issues a start action for a shutoff server.
 func (c *Client) StartServer(ctx context.Context, serverID string) error {

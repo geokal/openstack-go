@@ -20,6 +20,7 @@ func main() {
 	startID := flag.String("start", "", "ID of server to start")
 	stopID := flag.String("stop", "", "ID of server to stop")
 	rebootID := flag.String("reboot", "", "ID of server to reboot")
+	getID := flag.String("get", "", "ID of server to fetch details")
 	flag.Parse()
 
 	ctx := context.Background()
@@ -48,6 +49,14 @@ func main() {
 			log.Fatalf("Failed to reboot server: %v", err)
 		}
 		fmt.Printf("Rebooted server %s\n", *rebootID)
+	}
+
+	if *getID != "" {
+		server, err := client.GetServer(ctx, *getID)
+		if err != nil {
+			log.Fatalf("Failed to get server: %v", err)
+		}
+		fmt.Printf("Fetched server %s: name=%s status=%s\n", server.ID, server.Name, server.Status)
 	}
 
 	// List servers example
