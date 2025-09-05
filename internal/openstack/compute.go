@@ -32,6 +32,18 @@ func (c *Client) ListServers(ctx context.Context) ([]servers.Server, error) {
 	return servers.ExtractServers(pager)
 }
 
+// ListFlavors returns all available flavors in the current project
+func (c *Client) ListFlavors(ctx context.Context) ([]flavors.Flavor, error) {
+	listOpts := flavors.ListOpts{}
+
+	pager, err := flavors.ListDetail(c.Compute, listOpts).AllPages(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return flavors.ExtractFlavors(pager)
+}
+
 // CreateServer creates a new virtual machine
 func (c *Client) CreateServer(ctx context.Context, config ServerConfig) (*servers.Server, error) {
 	networks := make([]servers.Network, len(config.NetworkIDs))

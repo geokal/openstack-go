@@ -79,6 +79,17 @@ func main() {
 		fmt.Printf("  server %d: id=%s, name=%s\n", i, server.ID, server.Name)
 	}
 
+	// List flavors example
+	flavorList, err := client.ListFlavors(ctx)
+	if err != nil {
+		log.Fatalf("Failed to list flavors: %v", err)
+	}
+
+	fmt.Println("Available flavors:")
+	for i, flavor := range flavorList {
+		fmt.Printf("  flavor %d: id=%s, name=%s, vcpus=%d, ram=%dMB, disk=%dGB\n", i, flavor.ID, flavor.Name, flavor.VCPUs, flavor.RAM, flavor.Disk)
+	}
+
 	// Create server example
 	config := openstack.ServerConfig{
 		Name:           "test-server",

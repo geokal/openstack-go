@@ -5,6 +5,7 @@ This project demonstrates basic interactions with the OpenStack Compute API usin
 ## Features
 
 - List servers
+- List flavors
 - Create a new server
 - **Delete a server** using `DeleteServer` which waits for the deletion to complete
 
