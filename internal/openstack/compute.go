@@ -2,7 +2,7 @@ package openstack
 
 import (
 	"context"
-	"errors"
+	"net/http"
 
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/flavors"
@@ -62,7 +62,6 @@ func (c *Client) GetFlavor(ctx context.Context, flavorID string) (*flavors.Flavo
 	return flavors.Get(ctx, c.Compute, flavorID).Extract()
 }
 
-
 // StartServer issues a start action for a shutoff server.
 func (c *Client) StartServer(ctx context.Context, serverID string) error {
 	return servers.Start(ctx, c.Compute, serverID).ExtractErr()
@@ -79,14 +78,20 @@ func (c *Client) RebootServer(ctx context.Context, serverID string) error {
 	return servers.Reboot(ctx, c.Compute, serverID, opts).ExtractErr()
 }
 
+// CreateImage creates a snapshot of the specified server and returns the image ID.
+func (c *Client) CreateImage(ctx context.Context, serverID, imageName string) (string, error) {
+	opts := servers.CreateImageOpts{Name: imageName}
+	return servers.CreateImage(ctx, c.Compute, serverID, opts).ExtractImageID()
+}
+
 // DeleteServer removes a server by ID and waits until it is fully deleted.
 func (c *Client) DeleteServer(ctx context.Context, serverID string) error {
 	if err := servers.Delete(ctx, c.Compute, serverID).ExtractErr(); err != nil {
 		return err
 	}
 
-	err := servers.WaitForStatus(ctx, c.Compute, serverID, "DELETED", 120)
-	if err != nil && !errors.Is(err, gophercloud.ErrDefault404{}) {
+	err := servers.WaitForStatus(ctx, c.Compute, serverID, "DELETED")
+	if err != nil && !gophercloud.ResponseCodeIs(err, http.StatusNotFound) {
 		return err
 	}
 
