@@ -2,7 +2,7 @@ package openstack
 
 import (
 	"context"
-	"errors"
+	"net/http"
 
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/flavors"
@@ -30,6 +30,18 @@ func (c *Client) ListServers(ctx context.Context) ([]servers.Server, error) {
 	}
 
 	return servers.ExtractServers(pager)
+}
+
+// ListFlavors returns all available flavors in the current project
+func (c *Client) ListFlavors(ctx context.Context) ([]flavors.Flavor, error) {
+	listOpts := flavors.ListOpts{}
+
+	pager, err := flavors.ListDetail(c.Compute, listOpts).AllPages(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return flavors.ExtractFlavors(pager)
 }
 
 // CreateServer creates a new virtual machine
@@ -62,7 +74,6 @@ func (c *Client) GetFlavor(ctx context.Context, flavorID string) (*flavors.Flavo
 	return flavors.Get(ctx, c.Compute, flavorID).Extract()
 }
 
-
 // StartServer issues a start action for a shutoff server.
 func (c *Client) StartServer(ctx context.Context, serverID string) error {
 	return servers.Start(ctx, c.Compute, serverID).ExtractErr()
@@ -85,8 +96,8 @@ func (c *Client) DeleteServer(ctx context.Context, serverID string) error {
 		return err
 	}
 
-	err := servers.WaitForStatus(ctx, c.Compute, serverID, "DELETED", 120)
-	if err != nil && !errors.Is(err, gophercloud.ErrDefault404{}) {
+	err := servers.WaitForStatus(ctx, c.Compute, serverID, "DELETED")
+	if err != nil && !gophercloud.ResponseCodeIs(err, http.StatusNotFound) {
 		return err
 	}
 
