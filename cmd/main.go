@@ -10,6 +10,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// main is the entry point for the command-line tool that manages OpenStack servers.
+// It loads environment variables, parses command-line flags for server actions (start, stop, reboot),
+// initializes the OpenStack client, performs the requested server actions, lists existing servers,
+// and creates a new server with predefined configuration. The program logs fatal errors and exits on failure.
 func main() {
 	// Load environment variables from .env file
 	if err := godotenv.Load(); err != nil {
