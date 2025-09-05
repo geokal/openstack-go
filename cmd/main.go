@@ -24,6 +24,8 @@ func main() {
 	startID := flag.String("start", "", "ID of server to start")
 	stopID := flag.String("stop", "", "ID of server to stop")
 	rebootID := flag.String("reboot", "", "ID of server to reboot")
+	snapshotID := flag.String("snapshot", "", "ID of server to snapshot")
+	snapshotName := flag.String("snapshot-name", "", "Name of image to create")
 	flag.Parse()
 
 	ctx := context.Background()
@@ -52,6 +54,18 @@ func main() {
 			log.Fatalf("Failed to reboot server: %v", err)
 		}
 		fmt.Printf("Rebooted server %s\n", *rebootID)
+	}
+
+	if *snapshotID != "" {
+		name := *snapshotName
+		if name == "" {
+			name = fmt.Sprintf("%s-snapshot", *snapshotID)
+		}
+		imageID, err := client.CreateImage(ctx, *snapshotID, name)
+		if err != nil {
+			log.Fatalf("Failed to create image: %v", err)
+		}
+		fmt.Printf("Created image %s from server %s\n", imageID, *snapshotID)
 	}
 
 	// List servers example
